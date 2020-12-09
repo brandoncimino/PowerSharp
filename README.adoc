@@ -1,0 +1,31 @@
+= PowerSharp
+
+:psmoduletut: https://docs.microsoft.com/en-us/powershell/scripting/dev-cross-plat/create-standard-library-binary-module?view=powershell-7.1[How to create a Standard Library binary module]
+:psclasshelp: https://stephanevg.github.io/powershell/class/module/DATA-How-To-Write-powershell-Modules-with-classes/[How to write Powershell modules with classes]
+:psmodmanifest: https://docs.microsoft.com/en-us/powershell/scripting/developer/module/how-to-write-a-powershell-module-manifest?view=powershell-7.1#module-manifest-elements[How to write a Powershell module manifest]
+
+== Useful Links
+- {psmoduletut}
+- {psclasshelp}
+- {psmodmanifest}
+
+== Project Structure
+
+=== link:power[/power]
+Contains the root `.psm1` file as well as any additional `.psm1` or `.ps1` files.
+
+[NOTE]
+====
+To be accessible via type definition (i.e. `[CustomType]`), *Powershell* classes must be loaded via `using module` rather than `Import-Module` (see {psclasshelp})
+
+However, *nested modules* are imported via `Import-Module` (see {psmodmanifest})
+
+As a result, in order for a *Powershell* class to be accessible via type definition it must:
+
+1. Be loaded via `using module` and *not* `Import-Module`
+2. Be defined in the *root module* rather than a *nested module*
+
+As a result, it is generally better to define classes as `.cs` files.
+====
+
+=== link:sharp[/sharp]

@@ -7,7 +7,7 @@ namespace PowerSharp
     [Cmdlet(VerbsCommon.Format, "QueryParams")]
     public class FormatQueryParams : PSCmdlet
     {
-        [Parameter(ValueFromPipeline = true, Mandatory = true)]
+        [Parameter(ValueFromPipeline = true, Mandatory = true, Position = 1)]
         public IDictionary QueryParams;
 
         private Dictionary<object, object> allParams;
@@ -19,14 +19,23 @@ namespace PowerSharp
 
         protected override void ProcessRecord()
         {
-            foreach(var key in QueryParams.Keys){
-                allParams.Add(key, QueryParams[key]);
+            foreach (var key in QueryParams.Keys)
+            {
+                if (allParams.ContainsKey(key))
+                {
+                    WriteWarning($"The provided maps contain a duplicate key: {key}. The old value, {allParams[key]}, will be used, and the new value, {QueryParams[key]}, will NOT be.");
+                    continue;
+                }
+                else
+                {
+                    allParams.Add(key, QueryParams[key]);
+                }
             }
         }
 
         protected override void EndProcessing()
         {
-            WriteObject(RestApi.FormatQueryParams(allParams),false);
+            WriteObject(RestApi.FormatQueryParams(allParams), false);
         }
     }
 }

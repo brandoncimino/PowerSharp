@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Management.Automation;
+using Microsoft.PowerShell.Commands;
 
 namespace PowerSharp
 {
@@ -25,6 +26,8 @@ namespace PowerSharp
 
         public ErrorRecord LastError { get; private set; }
 
+        public string QueryString => FormatQueryParams(QueryParams);
+
         #region Utilities
         public static string FormatQueryParams(IDictionary queryParams){
             var pairs = new List<string>();
@@ -34,6 +37,12 @@ namespace PowerSharp
 
             return string.Join("&",pairs);
         }
+        #endregion
+
+        #region Instance Methods
+        // public PSObject Request(System.Net.Http.HttpMethod method){
+        //     Microsoft.PowerShell.
+        // }
         #endregion
     }
 }

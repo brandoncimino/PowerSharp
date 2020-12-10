@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Management.Automation;
+using Microsoft.PowerShell.Commands;
+using Microsoft.PowerShell.Commands.Utility;
 
 namespace PowerSharp
 {
@@ -37,5 +39,14 @@ namespace PowerSharp
         {
             WriteObject(RestApi.FormatQueryParams(allParams), false);
         }
+    }
+
+    [Cmdlet(VerbsLifecycle.Invoke, "LongRest")]
+    public class InvokeLongRestCommand : InvokeRestMethodCommand {
+        [Parameter]
+        public string BaseUri;
+
+        [Parameter]
+        public IDictionary QueryParams;
     }
 }

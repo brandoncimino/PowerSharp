@@ -1,6 +1,6 @@
 # This is the "build" script for the entire module, which combines both C# and PowerShell "modules"
 
-Remove-Item "$PSScriptRoot/build" -Recurse -Force
+Remove-Item "$PSScriptRoot/build" -Recurse -Force -ErrorAction SilentlyContinue
 
 #region Variables
 $module = "PowerSharp"

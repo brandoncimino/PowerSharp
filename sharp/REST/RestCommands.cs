@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Management.Automation;
 using Microsoft.PowerShell.Commands;
-using Microsoft.PowerShell.Commands.Utility;
 using System.IO;
 
 namespace PowerSharp

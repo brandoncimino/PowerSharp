@@ -9,7 +9,7 @@ namespace PowerSharp
 {
     public class RestApi
     {
-        public Uri BaseUrl;
+        public string BaseUrl;
 
         public string BasePath;
 
@@ -30,7 +30,12 @@ namespace PowerSharp
 
 
         #region Instance Methods
-        
+        public PSObject Invoke(){
+            var longRestCommand = new InvokeLongRestCommand();
+
+            // longRestCommand.InvokeCommand()
+            throw new NotImplementedException();
+        }
         #endregion
     }
 }

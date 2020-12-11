@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using System.Management.Automation;
@@ -8,8 +9,6 @@ namespace PowerSharp
 {
     public class RestApi
     {
-        public const string Noun = "REST";
-
         public Uri BaseUrl;
 
         public string BasePath;
@@ -26,23 +25,12 @@ namespace PowerSharp
 
         public ErrorRecord LastError { get; private set; }
 
-        public string QueryString => FormatQueryParams(QueryParams);
+        public string QueryString => RestUtils.FormatQueryParams(QueryParams);
 
-        #region Utilities
-        public static string FormatQueryParams(IDictionary queryParams){
-            var pairs = new List<string>();
-            foreach(var key in queryParams.Keys){
-                pairs.Add($"{key}={queryParams[key]}");
-            }
 
-            return string.Join("&",pairs);
-        }
-        #endregion
 
         #region Instance Methods
-        // public PSObject Request(System.Net.Http.HttpMethod method){
-        //     Microsoft.PowerShell.
-        // }
+        
         #endregion
     }
 }

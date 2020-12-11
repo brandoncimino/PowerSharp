@@ -27,8 +27,6 @@ namespace PowerSharp
 
         public string QueryString => RestUtils.FormatQueryParams(QueryParams);
 
-
-
         #region Instance Methods
         public PSObject Invoke(){
             var longRestCommand = new InvokeLongRestCommand();

@@ -7,6 +7,9 @@ using System.IO;
 
 namespace PowerSharp
 {
+    /// <summary>
+    /// TODO: fix pipeline input :'(
+    /// </summary>
     [Cmdlet(VerbsLifecycle.Invoke, "LongRest")]
     public class InvokeLongRestCommand : InvokeRestMethodCommand
     {

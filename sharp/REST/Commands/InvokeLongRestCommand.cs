@@ -52,31 +52,7 @@ namespace PowerSharp
         [Parameter(ValueFromPipelineByPropertyName=true)]
         public override object Body { get => base.Body; set => base.Body = value; }
 
-        // [Parameter(ParameterSetName = "longrest")]
-        // [Parameter(ParameterSetName = "StandardMethod")]
-        // [Parameter(ParameterSetName = "StandardMethodNoProxy")]
-        // public override WebRequestMethod Method { get => WebRequestMethod.Get; }
-        // public override WebRequestMethod Method {get => WebRequestMethod.Get;
-
-        // public InvokeLongRestCommand() : base()
-        // {
-        //     base.Method = WebRequestMethod.Get;
-        // }
-
-
-
-        // [Parameter(ParameterSetName = "longrest")]
-        // [Parameter(ParameterSetName = "StandardMethod")]
-        // [Parameter(ParameterSetName = "StandardMethodNoProxy")]
-        // public override WebRequestMethod Method { get => WebRequestMethod.Get; }
-        // public override WebRequestMethod Method {get => WebRequestMethod.Get;
-
-        // public InvokeLongRestCommand() : base()
-        // {
-        //     base.Method = WebRequestMethod.Get;
-        // }
-
-                /// <summary>
+        /// <summary>
         /// Gets or sets the parameter Method.
         /// </summary>
         [Parameter(ParameterSetName = "StandardMethod")]

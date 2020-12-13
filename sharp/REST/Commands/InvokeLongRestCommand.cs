@@ -7,76 +7,108 @@ using System.IO;
 
 namespace PowerSharp
 {
-    /// <summary>
-    /// TODO: fix pipeline input :'(
-    /// </summary>
     [Cmdlet(VerbsLifecycle.Invoke, "LongRest")]
-    public class InvokeLongRestCommand : InvokeRestMethodCommand
+    public class InvokeLongRestCommand : PSCmdlet
     {
         [Parameter(ValueFromPipeline = true)]
-        public RestApi Api;
+        public RestApi Api = new RestApi();
 
-        [Parameter(Mandatory = true, Position = -1, ValueFromPipelineByPropertyName = true)]
-        public string BaseUrl;
+        private string _baseUrl;
+        [Parameter(Position = -1, ValueFromPipelineByPropertyName = true, ParameterSetName = "builder")]
+        public string BaseUrl
+        {
+            get => _baseUrl == null ? Api.BaseUrl : _baseUrl;
+            set => _baseUrl = value;
+        }
 
+        private string _apiVersion;
         [Parameter(ValueFromPipelineByPropertyName = true)]
-        public string ApiVersion;
+        public string ApiVersion
+        {
+            get => _apiVersion == null ? Api.ApiVersion : _apiVersion;
+            set => _apiVersion = value;
+        }
 
+        private string _basePath;
         [Parameter(ValueFromPipelineByPropertyName = true)]
-        public string BasePath;
+        public string BasePath
+        {
+            get => _basePath == null ? Api.BasePath : _basePath;
+            set => _basePath = value;
+        }
 
+        private string[] _endpoint = new string[]{};
         [Parameter(Position = 1, ValueFromPipelineByPropertyName = true)]
-        public string[] Endpoint = new string[] { };
-
-        [Parameter(Position = 3, ValueFromPipelineByPropertyName = true)]
-        public IDictionary QueryParams;
-
-        [Hidden]
-        public override Uri Uri
+        public string[] Endpoint
         {
             get
             {
-                var urlParts = new List<string> { BaseUrl, ApiVersion, BasePath };
-                urlParts.AddRange(Endpoint);
-
-                var urlString = RestUtils.JoinUrl(urlParts);
-                var uriBuilder = new UriBuilder(urlString);
-
-                // TODO: Right now this COMPLETELY DISREGARDS WHATEVER QUERY WAS IN THE URL YOU TYPED! that's not good!
-                if (QueryParams != null)
-                {
-                    uriBuilder.Query = RestUtils.FormatQueryParams(QueryParams);
-                }
-
-                return uriBuilder.Uri;
+                //TODO: This _definitely_ isn't the most efficient way to do this!
+                var ls = new List<string>();
+                ls.AddRange(_endpoint);
+                ls.AddRange(Api.Endpoint);
+                return ls.ToArray();
             }
+
+            set => _endpoint = value;
         }
 
-        [Parameter(ValueFromPipelineByPropertyName=true)]
-        public override object Body { get => base.Body; set => base.Body = value; }
-
-        /// <summary>
-        /// Gets or sets the parameter Method.
-        /// </summary>
-        [Parameter(ParameterSetName = "StandardMethod")]
-        [Parameter(ParameterSetName = "StandardMethodNoProxy")]
-        public override WebRequestMethod Method
+        private IDictionary _queryParams = new Dictionary<object, object>();
+        [Parameter(Position = 3, ValueFromPipelineByPropertyName = true)]
+        public IDictionary QueryParams
         {
-            get { return base.Method; }
+            get => GeneralUtils.JoinMaps(
+                    _queryParams,
+                    Api.QueryParams,
+                    GeneralUtils.Handedness.Left,
+                    GeneralUtils.Handedness.Left
+                );
+            set => _queryParams = value;
+        }
 
-            set { base.Method = value; }
+        private Uri Uri => RestUtils.BuildUrl(
+            BaseUrl,
+            ApiVersion,
+            BasePath,
+            Endpoint,
+            QueryParams
+        );
+
+        private object _body;
+        [Parameter(ValueFromPipelineByPropertyName = true)]
+        public object Body {
+             get => _body == null ? Api.Body : _body;
+             set => _body = value;
+        }
+
+        private WebRequestMethod _method = WebRequestMethod.Default;
+        [Parameter(ValueFromPipelineByPropertyName = true)]
+        public WebRequestMethod Method
+        {
+            get => _method == WebRequestMethod.Default ? Api.Method : _method;
+            set => _method = value;
+        }
+
+        private IDictionary _headers = new Dictionary<object,object>();
+        [Parameter(ValueFromPipelineByPropertyName = true)]
+        public IDictionary Headers {
+            get => GeneralUtils.JoinMaps(
+                _headers,
+                Api.Headers,
+                GeneralUtils.Handedness.Left,
+                GeneralUtils.Handedness.Left
+            );
+            set => _headers = value;
         }
 
         protected override void ProcessRecord()
         {
-            System.Console.WriteLine("Parameter set: " + ParameterSetName);
-            // base.Method = WebRequestMethod.Get;
-            System.Console.WriteLine($"Method:  {Method}");
-            System.Console.WriteLine($"Base:    {base.Method}");
-
-            base.Method = Method;
-            System.Console.WriteLine($"Base 2:  {base.Method}");
-            base.ProcessRecord();
+            this.InvokeRestCommand(
+                Uri,
+                Method,
+                Body,
+                Headers
+            );
         }
     }
 }

@@ -3,13 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Management.Automation;
 using System.Linq;
+using Microsoft.PowerShell.Commands;
 
 namespace PowerSharp
 {
     /// <summary>
     /// Contains methods & <see cref="PSCmdlet"/>s for interacting with the <a href="https://scryfall.com/docs/api">Scryfall REST API</a>
     /// </summary>
-    public class Scyrfall
+    public class Scryfall
     {
         public const string SCRY_VERB = "Scry";
 
@@ -22,7 +23,7 @@ namespace PowerSharp
         #endregion
 
         #region Cmdlets
-        [Cmdlet(SCRY_VERB, "Card")]
+        [Cmdlet(VerbsCommon.Get, "ScryfallCard", DefaultParameterSetName = "named-fuzzy")]
         public class ScryCardCommand : PSCmdlet
         {
             #region parameters
@@ -36,6 +37,7 @@ namespace PowerSharp
             #endregion
 
             #region /named
+            [Parameter(Position = 0)]
             [Parameter(ParameterSetName = "named-exact", Mandatory = true)]
             [Parameter(ParameterSetName = "named-fuzzy", Mandatory = true)]
             [Parameter(ParameterSetName = "named-exact-image", Mandatory = true)]
@@ -102,9 +104,9 @@ namespace PowerSharp
             public int Page = 1;
             #endregion
 
-            private Dictionary<object, object> QueryParams => getQueryParams();
+            private Dictionary<object, object> QueryParams => GetQueryParams();
 
-            private Dictionary<object, object> getQueryParams()
+            private Dictionary<object, object> GetQueryParams()
             {
                 var qp = new Dictionary<object, object>();
 
@@ -123,8 +125,6 @@ namespace PowerSharp
                         qp.Add("format", Image ? "image" : "json");
                         qp.Add("set", Set);
                         qp.Add("face", Back ? "back" : null);
-                        qp.Add("version", Version);
-                        qp.Add("pretty", Pretty);
                         qp.Add("version", Version);
                         break;
 
@@ -149,7 +149,25 @@ namespace PowerSharp
             #region processing
             protected override void ProcessRecord()
             {
-                base.ProcessRecord();
+                var apiCopy = Api.Copy();
+                apiCopy.QueryParams = QueryParams;
+
+                if(ParameterSetName.StartsWith("named")){
+                    apiCopy.Endpoint = new string[]{"cards","named"};
+                }
+                else if(ParameterSetName.StartsWith("search")){
+                    apiCopy.Endpoint = new string[]{"cards","search"};
+                }
+                else{
+                    throw new InvalidOperationException($"I dunno what this wacko parameter set is!!!! {ParameterSetName}");
+                }
+
+                this.InvokeRestCommand(
+                    apiCopy.Uri,
+                    WebRequestMethod.Get,
+                    null,
+                    null
+                );
             }
             #endregion
         }

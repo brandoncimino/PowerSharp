@@ -7,7 +7,7 @@ using Microsoft.PowerShell.Commands;
 
 namespace PowerSharp
 {
-    public class RestApi
+    public class RestApi : ICloneable
     {
         public string BaseUrl;
 
@@ -15,24 +15,55 @@ namespace PowerSharp
 
         public string ApiVersion;
 
-        public string Endpoint;
+        public string[] Endpoint = new string[] { };
 
-        public IDictionary Headers;
+        public IDictionary Headers = new Dictionary<object, object>();
 
-        public IDictionary QueryParams;
+        public IDictionary QueryParams = new Dictionary<object, object>();
 
-        public PSObject LastResponse { get; private set; }
+        public PSObject LastResponse
+        {
+            get => throw new NotImplementedException();
+            private set => throw new NotImplementedException();
+        }
 
-        public ErrorRecord LastError { get; private set; }
+        public ErrorRecord LastError
+        {
+            get => throw new NotImplementedException();
+            private set => throw new NotImplementedException();
+        }
+
+        public object Body;
+
+        public WebRequestMethod Method = WebRequestMethod.Get;
 
         public string QueryString => RestUtils.FormatQueryParams(QueryParams);
 
-        #region Instance Methods
-        public PSObject Invoke(){
-            var longRestCommand = new InvokeLongRestCommand();
+        public Uri Uri => RestUtils.BuildUrl(
+            BaseUrl,
+            ApiVersion,
+            BasePath,
+            Endpoint,
+            QueryParams
+        );
 
-            // longRestCommand.InvokeCommand()
+        #region Instance Methods
+        public PSObject Invoke()
+        {
             throw new NotImplementedException();
+        }
+
+        public object Clone()
+        {
+            return Copy();
+        }
+
+        public RestApi Copy(){
+            var newApi = (RestApi)this.MemberwiseClone();
+            newApi.Headers = new Hashtable(this.Headers);
+            newApi.QueryParams = new Hashtable(this.QueryParams);
+            newApi.Endpoint = new List<string>(this.Endpoint).ToArray();
+            return newApi;
         }
         #endregion
     }

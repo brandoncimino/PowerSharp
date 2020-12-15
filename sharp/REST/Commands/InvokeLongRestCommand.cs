@@ -103,6 +103,7 @@ namespace PowerSharp
 
         protected override void ProcessRecord()
         {
+            WriteVerbose($"{nameof(ParameterSetName)}: {ParameterSetName}");
             WriteVerbose($"Sending a {Method} request to {Uri}");
             this.InvokeRestCommand(
                 Uri,

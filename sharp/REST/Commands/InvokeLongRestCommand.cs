@@ -37,7 +37,7 @@ namespace PowerSharp
             set => _basePath = value;
         }
 
-        private string[] _endpoint = new string[]{};
+        private string[] _endpoint = new string[] { };
         [Parameter(Position = 1, ValueFromPipelineByPropertyName = true)]
         public string[] Endpoint
         {
@@ -76,9 +76,10 @@ namespace PowerSharp
 
         private object _body;
         [Parameter(ValueFromPipelineByPropertyName = true)]
-        public object Body {
-             get => _body == null ? Api.Body : _body;
-             set => _body = value;
+        public object Body
+        {
+            get => _body == null ? Api.Body : _body;
+            set => _body = value;
         }
 
         private WebRequestMethod _method = WebRequestMethod.Default;
@@ -89,9 +90,10 @@ namespace PowerSharp
             set => _method = value;
         }
 
-        private IDictionary _headers = new Dictionary<object,object>();
+        private IDictionary _headers = new Dictionary<object, object>();
         [Parameter(ValueFromPipelineByPropertyName = true)]
-        public IDictionary Headers {
+        public IDictionary Headers
+        {
             get => GeneralUtils.JoinMaps(
                 _headers,
                 Api.Headers,

@@ -68,8 +68,8 @@ namespace PowerSharp
 
         private Uri Uri => RestUtils.BuildUrl(
             BaseUrl,
-            ApiVersion,
             BasePath,
+            ApiVersion,
             Endpoint,
             QueryParams
         );
@@ -103,6 +103,7 @@ namespace PowerSharp
 
         protected override void ProcessRecord()
         {
+            WriteVerbose($"Sending a {Method} request to {Uri}");
             this.InvokeRestCommand(
                 Uri,
                 Method,

@@ -41,8 +41,8 @@ namespace PowerSharp
 
         public Uri Uri => RestUtils.BuildUrl(
             BaseUrl,
-            ApiVersion,
             BasePath,
+            ApiVersion,
             Endpoint,
             QueryParams
         );
@@ -64,6 +64,11 @@ namespace PowerSharp
             newApi.QueryParams = new Hashtable(this.QueryParams);
             newApi.Endpoint = new List<string>(this.Endpoint).ToArray();
             return newApi;
+        }
+
+        public override string ToString()
+        {
+            return this.Uri.ToString();
         }
         #endregion
     }

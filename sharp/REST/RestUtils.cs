@@ -41,9 +41,9 @@ namespace PowerSharp
             return string.Join("/", trimmed);
         }
 
-        public static Uri BuildUrl(string baseUrl, string apiVersion, string basePath, IEnumerable<string> endpoint, IDictionary queryParams)
+        public static Uri BuildUrl(string baseUrl, string basePath, string apiVersion, IEnumerable<string> endpoint, IDictionary queryParams)
         {
-            var urlParts = new List<string> { baseUrl, apiVersion, basePath };
+            var urlParts = new List<string> { baseUrl, basePath, apiVersion };
             urlParts.AddRange(endpoint);
 
             var urlString = JoinUrl(urlParts);

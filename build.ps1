@@ -1,4 +1,5 @@
 # This is the "build" script for the entire module, which combines both C# and PowerShell "modules"
+Write-Host "Building PowerSharp..."
 
 $old_build_dir = Get-Item "$PSScriptRoot/build" -ErrorAction SilentlyContinue
 if ($old_build_dir) {

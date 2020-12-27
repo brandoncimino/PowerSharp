@@ -30,7 +30,12 @@ dotnet-uninstall-debian-packages.sh
 .vs/
 
 # VSCode directories that are not at the repository root
-/**/.vscode/
+# NOTE from Brandon on 12/27/2020: 
+# The original pattern, /**/.vscode/, appears to be _incorrect_ - 
+# it matches the .vscode folder at the root of the repo.
+# So, I've updated it, but I'd still like to figure out why this is...
+# /**/.vscode/
+/*/**/.vscode
 
 # Project Rider IDE files
 .idea.powershell/

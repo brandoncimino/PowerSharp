@@ -21,21 +21,54 @@ namespace PowerSharp
 
         public IDictionary QueryParams = new Dictionary<object, object>();
 
+        private PSObject _lastResponse_personal;
         public PSObject LastResponse
         {
-            get => throw new NotImplementedException();
-            private set => throw new NotImplementedException();
+            //TODO: This logic, which also appears in LastError, seems very useful and repeatable to make it something like "ParentProperty" or something
+            get
+            {
+                return Find.First(
+                    ParentApi == null ? null : ParentApi.LastResponse,
+                    _lastResponse_personal
+                );
+            }
+            private set
+            {
+                _lastResponse_personal = value;
+
+                if (ParentApi != null)
+                {
+                    ParentApi.LastResponse = value;
+                }
+            }
         }
 
+        private ErrorRecord _lastError_personal;
         public ErrorRecord LastError
         {
-            get => throw new NotImplementedException();
-            private set => throw new NotImplementedException();
+            get
+            {
+                return Find.First(
+                    ParentApi == null ? null : ParentApi.LastError,
+                    _lastError_personal
+                );
+            }
+            private set
+            {
+                _lastError_personal = value;
+
+                if (ParentApi != null)
+                {
+                    ParentApi.LastError = value;
+                }
+            }
         }
 
         public object Body;
 
         public WebRequestMethod Method = WebRequestMethod.Get;
+
+        public RestApi ParentApi;
 
         public string QueryString => RestUtils.FormatQueryParams(QueryParams);
 
@@ -55,14 +88,20 @@ namespace PowerSharp
 
         public object Clone()
         {
-            return Copy();
+            return Copy(false);
         }
 
-        public RestApi Copy(){
+        public RestApi Copy(bool asChild = true)
+        {
             var newApi = (RestApi)this.MemberwiseClone();
             newApi.Headers = new Hashtable(this.Headers);
             newApi.QueryParams = new Hashtable(this.QueryParams);
             newApi.Endpoint = new List<string>(this.Endpoint).ToArray();
+            
+            if(asChild){
+                newApi.ParentApi = this;
+            }
+
             return newApi;
         }
 

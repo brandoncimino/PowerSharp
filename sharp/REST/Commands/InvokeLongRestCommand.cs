@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Management.Automation;
 using Microsoft.PowerShell.Commands;
 using System.IO;
+using System.Linq;
 
 namespace PowerSharp
 {
@@ -11,21 +12,36 @@ namespace PowerSharp
     public class InvokeLongRestCommand : PSCmdlet
     {
         [Parameter(ValueFromPipeline = true)]
-        public RestApi Api = new RestApi();
+        public RestApi Api;
 
+        [Parameter]
+        public RestApi RequestSpec;
+
+        #region BaseUrl
         private string _baseUrl;
         [Parameter(Position = -1, ValueFromPipelineByPropertyName = true, ParameterSetName = "builder")]
         public string BaseUrl
         {
-            get => _baseUrl == null ? Api.BaseUrl : _baseUrl;
+            get => Find.NonBlank(
+                    _baseUrl,
+                    RequestSpec != null ? RequestSpec.BaseUrl : null,
+                    Api != null ? Api.BaseUrl : null
+            );
+
             set => _baseUrl = value;
         }
+        #endregion
 
         private string _apiVersion;
         [Parameter(ValueFromPipelineByPropertyName = true)]
         public string ApiVersion
         {
-            get => _apiVersion == null ? Api.ApiVersion : _apiVersion;
+            get => Find.NonBlank(
+                _apiVersion,
+                RequestSpec != null ? RequestSpec.ApiVersion : null,
+                Api != null ? Api.ApiVersion : null
+            );
+
             set => _apiVersion = value;
         }
 
@@ -33,7 +49,12 @@ namespace PowerSharp
         [Parameter(ValueFromPipelineByPropertyName = true)]
         public string BasePath
         {
-            get => _basePath == null ? Api.BasePath : _basePath;
+            get => Find.NonBlank(
+                _basePath,
+                RequestSpec != null ? RequestSpec.BasePath : null,
+                Api != null ? Api.BasePath : null
+            );
+
             set => _basePath = value;
         }
 
@@ -45,8 +66,9 @@ namespace PowerSharp
             {
                 //TODO: This _definitely_ isn't the most efficient way to do this!
                 var ls = new List<string>();
-                ls.AddRange(_endpoint);
                 ls.AddRange(Api.Endpoint);
+                ls.AddRange(RequestSpec.Endpoint);
+                ls.AddRange(_endpoint);
                 return ls.ToArray();
             }
 
@@ -57,12 +79,17 @@ namespace PowerSharp
         [Parameter(Position = 3, ValueFromPipelineByPropertyName = true)]
         public IDictionary QueryParams
         {
-            get => GeneralUtils.JoinMaps(
-                    _queryParams,
-                    Api.QueryParams,
-                    GeneralUtils.Handedness.Left,
-                    GeneralUtils.Handedness.Left
-                );
+            // I want to keep this following style around, but it would theoretically be way less efficient
+            get => _queryParams
+                .JoinMap(RequestSpec != null ? RequestSpec.QueryParams : null)
+                .JoinMap(Api != null ? Api.QueryParams : null);
+
+            // This would be my preferred style, but it isn't implemented yet
+            // get => GeneralUtils.JoinMaps(
+            //     _queryParams,
+            //     RequestSpec != null ? RequestSpec.QueryParams : null,
+            //     Api != null ? Api.QueryParams : null
+            // );
             set => _queryParams = value;
         }
 
@@ -78,7 +105,12 @@ namespace PowerSharp
         [Parameter(ValueFromPipelineByPropertyName = true)]
         public object Body
         {
-            get => _body == null ? Api.Body : _body;
+            get => Find.First(
+                _body,
+                RequestSpec != null ? RequestSpec.Body : null,
+                Api != null ? Api.Body : null
+            );
+
             set => _body = value;
         }
 
@@ -86,7 +118,12 @@ namespace PowerSharp
         [Parameter(ValueFromPipelineByPropertyName = true)]
         public WebRequestMethod Method
         {
-            get => _method == WebRequestMethod.Default ? Api.Method : _method;
+            get => new WebRequestMethod[]{
+                _method,
+                RequestSpec != null ? RequestSpec.Method : WebRequestMethod.Default,
+                Api != null ? Api.Method : WebRequestMethod.Default
+            }.FirstOrDefault(method => method != WebRequestMethod.Default);
+
             set => _method = value;
         }
 
@@ -94,12 +131,16 @@ namespace PowerSharp
         [Parameter(ValueFromPipelineByPropertyName = true)]
         public IDictionary Headers
         {
-            get => GeneralUtils.JoinMaps(
-                _headers,
-                Api.Headers,
-                GeneralUtils.Handedness.Left,
-                GeneralUtils.Handedness.Left
-            );
+            // get => GeneralUtils.JoinMaps(
+            //     _headers,
+            //     Api.Headers,
+            //     GeneralUtils.Handedness.Left,
+            //     GeneralUtils.Handedness.Left
+            // );
+            get => _headers
+                .JoinMap(RequestSpec != null ? RequestSpec.Headers : null)
+                .JoinMap(Api != null ? Api.Headers : null);
+                
             set => _headers = value;
         }
 

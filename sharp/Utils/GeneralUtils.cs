@@ -120,6 +120,16 @@ namespace PowerSharp
         }
 
         public static IDictionary JoinMaps(
+            params IDictionary[] maps
+        ){
+            return JoinMaps(
+                Handedness.Left,
+                Handedness.Left,
+                maps
+            );
+        }
+
+        public static IDictionary JoinMaps(
             this IDictionary left,
             Handedness prefer = Handedness.Left,
             Handedness first = Handedness.Left,

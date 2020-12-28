@@ -9,6 +9,7 @@
             "request": "launch",
             "name": "via launch.ps1",
             "script": "${workspaceFolder}/launch.ps1",
+            "createTemporaryIntegratedConsole": true,
             "args": ["${file}"]
         }
     ]

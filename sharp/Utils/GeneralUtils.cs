@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace PowerSharp
 {
-    public abstract class GeneralUtils
+    public static class GeneralUtils
     {
         public static string FormatPowerShellParams<TKey, TVal>(IDictionary<TKey, TVal> powershellParams)
         {

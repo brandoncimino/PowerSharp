@@ -107,6 +107,7 @@ test/tools/Modules/SelfSignedCertificate/
 # Module build folder
 build/
 
-# Sketchbook folder
+# Sketchbooks & scraps
 sketchbook/
-sketchbook.*
+sketchbook*.*
+scrap*.*

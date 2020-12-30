@@ -80,6 +80,17 @@ namespace PowerSharp
             Handedness first = Handedness.Left
         )
         {
+            // Exit early if either of the maps are null
+            if (left == null)
+            {
+                return right;
+            }
+
+            if (right == null)
+            {
+                return left;
+            }
+
             var newMap = new Dictionary<object, object>();
 
             var formerMap = first == Handedness.Left ? left : right;
@@ -87,58 +98,47 @@ namespace PowerSharp
             var preferMap = prefer == Handedness.Left ? left : right;
             var deferMap = prefer == Handedness.Left ? right : left;
 
-            foreach (var key in formerMap)
+            foreach (var key in formerMap.Keys)
             {
                 newMap.Add(key, preferMap.Contains(key) ? preferMap[key] : deferMap[key]);
             }
 
-            foreach (var key in latterMap)
+            foreach (var key in latterMap.Keys)
             {
+                if (newMap.ContainsKey(key))
+                {
+                    continue;
+                }
+
                 newMap.Add(key, preferMap.Contains(key) ? preferMap[key] : deferMap[key]);
             }
 
             return newMap;
         }
 
-        public static IDictionary JoinMap(
-            this IDictionary left,
-            IDictionary right,
-            Handedness prefer = Handedness.Left,
-            Handedness first = Handedness.Left
-        )
-        {
-            return JoinMaps(left, right, prefer, first);
-        }
-
-        public static IDictionary JoinMaps(
-            Handedness prefer = Handedness.Left,
-            Handedness first = Handedness.Left,
-            params IDictionary[] maps
-        )
-        {
-            throw new NotImplementedException("This will be like JoinMaps but for a buncha maps");
-        }
-
         public static IDictionary JoinMaps(
             params IDictionary[] maps
-        ){
-            return JoinMaps(
-                Handedness.Left,
-                Handedness.Left,
-                maps
-            );
-        }
-
-        public static IDictionary JoinMaps(
-            this IDictionary left,
-            Handedness prefer = Handedness.Left,
-            Handedness first = Handedness.Left,
-            params IDictionary[] right
         )
         {
-            var dicList = new IDictionary[]{left};
-            dicList = dicList.Concat(right).ToArray();
-            return JoinMaps(prefer, first, dicList);
+            if (maps.Length < 1)
+            {
+                return null;
+            }
+            else if (maps.Length == 1)
+            {
+                return maps.Single();
+            }
+            else
+            {
+                IDictionary newMap = new Dictionary<object, object>();
+
+                foreach (var map in maps)
+                {
+                    newMap = JoinMaps(newMap, map, Handedness.Left, Handedness.Left);
+                }
+
+                return newMap;
+            }
         }
     }
 }

@@ -19,11 +19,11 @@ namespace PowerSharp
         }
 
         public static T NonNull<T>(params T[] options){
-            return options.First(it => it!=null);
+            return options.FirstOrDefault(it => it!=null);
         }
 
         public static string NonBlank(params string[] options){
-            return options.First(it => !string.IsNullOrWhiteSpace(it));
+            return options.FirstOrDefault(it => !string.IsNullOrWhiteSpace(it));
         }
     }
 }

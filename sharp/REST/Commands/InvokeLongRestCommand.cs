@@ -66,9 +66,20 @@ namespace PowerSharp
             {
                 //TODO: This _definitely_ isn't the most efficient way to do this!
                 var ls = new List<string>();
-                ls.AddRange(Api.Endpoint);
-                ls.AddRange(RequestSpec.Endpoint);
-                ls.AddRange(_endpoint);
+                if (Api != null && Api.Endpoint != null)
+                {
+                    ls.AddRange(Api.Endpoint);
+                };
+
+                if (RequestSpec != null && RequestSpec.Endpoint != null)
+                {
+                    ls.AddRange(RequestSpec.Endpoint);
+                }
+
+                if (_endpoint != null)
+                {
+                    ls.AddRange(_endpoint);
+                }
                 return ls.ToArray();
             }
 
@@ -79,17 +90,12 @@ namespace PowerSharp
         [Parameter(Position = 3, ValueFromPipelineByPropertyName = true)]
         public IDictionary QueryParams
         {
-            // I want to keep this following style around, but it would theoretically be way less efficient
-            get => _queryParams
-                .JoinMap(RequestSpec != null ? RequestSpec.QueryParams : null)
-                .JoinMap(Api != null ? Api.QueryParams : null);
+            get => GeneralUtils.JoinMaps(
+                _queryParams,
+                RequestSpec != null ? RequestSpec.QueryParams : null,
+                Api != null ? Api.QueryParams : null
+            );
 
-            // This would be my preferred style, but it isn't implemented yet
-            // get => GeneralUtils.JoinMaps(
-            //     _queryParams,
-            //     RequestSpec != null ? RequestSpec.QueryParams : null,
-            //     Api != null ? Api.QueryParams : null
-            // );
             set => _queryParams = value;
         }
 
@@ -105,7 +111,7 @@ namespace PowerSharp
         [Parameter(ValueFromPipelineByPropertyName = true)]
         public object Body
         {
-            get => Find.First(
+            get => Find.FirstOrDefault(
                 _body,
                 RequestSpec != null ? RequestSpec.Body : null,
                 Api != null ? Api.Body : null
@@ -131,16 +137,12 @@ namespace PowerSharp
         [Parameter(ValueFromPipelineByPropertyName = true)]
         public IDictionary Headers
         {
-            // get => GeneralUtils.JoinMaps(
-            //     _headers,
-            //     Api.Headers,
-            //     GeneralUtils.Handedness.Left,
-            //     GeneralUtils.Handedness.Left
-            // );
-            get => _headers
-                .JoinMap(RequestSpec != null ? RequestSpec.Headers : null)
-                .JoinMap(Api != null ? Api.Headers : null);
-                
+            get => GeneralUtils.JoinMaps(
+                _headers,
+                RequestSpec != null ? RequestSpec.Headers : null,
+                Api != null ? Api.Headers : null
+            );
+
             set => _headers = value;
         }
 

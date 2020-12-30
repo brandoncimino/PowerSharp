@@ -27,7 +27,7 @@ namespace PowerSharp
             //TODO: This logic, which also appears in LastError, seems very useful and repeatable to make it something like "ParentProperty" or something
             get
             {
-                return Find.First(
+                return Find.FirstOrDefault(
                     ParentApi == null ? null : ParentApi.LastResponse,
                     _lastResponse_personal
                 );
@@ -48,7 +48,7 @@ namespace PowerSharp
         {
             get
             {
-                return Find.First(
+                return Find.FirstOrDefault(
                     ParentApi == null ? null : ParentApi.LastError,
                     _lastError_personal
                 );

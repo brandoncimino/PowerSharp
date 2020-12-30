@@ -19,9 +19,9 @@ $runnable = @(
 
 $extension = [System.IO.Path]::GetExtension($file)
 
-if ($runnables -contains $extension) {
+if ($runnable -contains $extension) {
     . $file
 }
 else {
-    Write-Host -ForegroundColor DarkGray "Skipping the execution of the file $file as it is not one of the `$runnable file types: [$runnable]"   
+    Write-Host -ForegroundColor DarkGray "Skipping the execution of the file $file of type $extension it is not one of the `$runnable file types: [$runnable]"   
 }

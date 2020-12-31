@@ -73,3 +73,31 @@ function Add-PropertyCascade(
         throw [System.NotImplementedException]::new()
     }
 }
+
+function Get-Properties(
+    [Parameter(ValueFromPipeline)]
+    $Object,
+
+    [Switch]$Settable
+) {
+    PROCESS {
+        $props = $Object | gm -MemberType Properties
+        if ($Settable) {
+            $props = $props | where { $_ | Get-IsSettable }   
+        }
+
+        return $props
+    }
+}
+
+function Get-IsSettable(
+    [Parameter(ValueFromPipeline)]
+    [Microsoft.PowerShell.Commands.MemberDefinition]$Member
+) {
+    PROCESS {
+        return (
+            $Member.MemberType -eq [System.Management.Automation.PSMemberTypes]::NoteProperty -or
+            $Member.Definition -match 'set;'
+        )
+    }
+}

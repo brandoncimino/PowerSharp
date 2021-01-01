@@ -1,8 +1,27 @@
+<#
+    .SYNOPSIS
+        Combines multiple C# and/or PSCustomObjects into a single *NEW* object.
+    
+    .DESCRIPTION
+        The objects from the `$Parts` array will be combined together into a single, *new* object.
+
+        The resulting object's `Type` will be, in prioritized order:
+            1. The explicitly defined `$Type`
+            2. The first non-`PSObject` `Type` encountered in the `$Parts` array
+            3. `PSObject`
+
+        The resulting object's properties will be set using values from the objects in the `$Parts` array.
+
+        If encountered properties are read-only, they are skipped.
+#>
 function Get-Smushed(
     [Parameter(Mandatory, ValueFromPipeline)]
     [object[]]$Parts,
 
-    [type]$Type
+    [type]$Type,
+
+    [ValidateSet('First','Last')]
+    [string]$Prefer = 'First'
 ){
     BEGIN {
         $allParts = @()
@@ -14,6 +33,11 @@ function Get-Smushed(
     }
 
     END {
+        # Possibly reverse $allParts, based on $Prefer
+        if($Prefer -eq 'Last'){
+            [array]::Reverse($allParts);
+        }
+
         if(!$Type){
             foreach($part in $allParts){
                 if($part -isnot [PSObject]){

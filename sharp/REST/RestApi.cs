@@ -32,7 +32,7 @@ namespace PowerSharp
                     _lastResponse_personal
                 );
             }
-            private set
+            set
             {
                 _lastResponse_personal = value;
 
@@ -53,7 +53,7 @@ namespace PowerSharp
                     _lastError_personal
                 );
             }
-            private set
+            set
             {
                 _lastError_personal = value;
 

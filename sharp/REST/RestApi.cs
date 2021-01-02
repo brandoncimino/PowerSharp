@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Management.Automation;
 using Microsoft.PowerShell.Commands;
+using System.Linq;
 
 namespace PowerSharp
 {
@@ -108,6 +109,23 @@ namespace PowerSharp
         public override string ToString()
         {
             return this.Uri.ToString();
+        }
+        #endregion
+
+        #region Utilities
+        public RestApi Combine(params RestApi[] restApis){
+            var newApi = new RestApi();
+
+            newApi.BaseUrl = restApis.Select(api => api.BaseUrl).FirstOrDefault(url => !string.IsNullOrWhiteSpace(url));
+            newApi.BasePath = restApis.Select(api => api.BasePath).FirstOrDefault(path => !string.IsNullOrWhiteSpace(path));
+            newApi.ApiVersion = restApis.Select(api => api.ApiVersion).FirstOrDefault(ver => !string.IsNullOrWhiteSpace(ver));
+            newApi.Endpoint = restApis.SelectMany(api => api.Endpoint.Where(endpoint => !string.IsNullOrWhiteSpace(endpoint))).ToArray();
+            newApi.Headers = GeneralUtils.JoinMaps(restApis.Select(api => api.Headers).ToArray());
+            newApi.QueryParams = GeneralUtils.JoinMaps(restApis.Select(api => api.QueryParams).ToArray());
+            newApi.Method = restApis.Select(api => api.Method).FirstOrDefault(method => method != WebRequestMethod.Default);
+            newApi.Body = restApis.Select(api => api.Body).FirstOrDefault(body => body.IsNotEmpty());
+
+            return newApi;
         }
         #endregion
     }

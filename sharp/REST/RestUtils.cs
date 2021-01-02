@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Management.Automation;
 using Microsoft.PowerShell.Commands;
+using System.Linq;
 
 namespace PowerSharp
 {
@@ -104,12 +105,16 @@ namespace PowerSharp
             this CommandInvocationIntrinsics commandInvocation,
             RestApi api
         ){
-            return commandInvocation.InvokeRestCommand(
+            //TODO: store error responses in RestApi
+            var response = commandInvocation.InvokeRestCommand(
                 api.Uri,
                 api.Method,
                 api.Body,
                 api.Headers
             );
+
+            api.LastResponse = response.Single();
+            return response;
         }
 
         public static Collection<PSObject> InvokeRestCommand(

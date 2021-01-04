@@ -2,11 +2,20 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace PowerSharp
 {
     public static class GeneralUtils
     {
+        public const BindingFlags VARIABLE_BINDING_FLAGS = (
+            BindingFlags.GetProperty |
+            BindingFlags.GetField |
+            BindingFlags.Instance |
+            BindingFlags.Public |
+            BindingFlags.NonPublic
+        );
+
         public static string FormatPowerShellParams<TKey, TVal>(IDictionary<TKey, TVal> powershellParams)
         {
             return string.Join(" ", powershellParams.Select(pair => $"-{pair.Key} {FormatParameter(pair.Value)}"));
@@ -139,6 +148,91 @@ namespace PowerSharp
 
                 return newMap;
             }
+        }
+
+        public static bool IsEmpty(this object value)
+        {
+            if (value == null)
+            {
+                return true;
+            }
+
+            switch (value)
+            {
+                case string s:
+                    return string.IsNullOrWhiteSpace(s);
+                case IEnumerable<object> collection:
+                    return collection.Count() == 0;
+                default:
+                    return false;
+            }
+        }
+
+        public static bool IsNotEmpty(this object value)
+        {
+            return !value.IsEmpty();
+        }
+
+        public static bool IsSettable(this PropertyInfo property){
+            return property.SetMethod != null;
+        }
+
+        public static bool IsSettable(this MemberInfo member){
+            switch(member){
+                case FieldInfo field:
+                    return true;
+                case PropertyInfo property:
+                    return property.IsSettable();
+                default:
+                    return false;
+            }
+        }
+
+        public static IEnumerable<MemberInfo> GetVariables(this Type type, bool settableOnly = false, BindingFlags variableBindingFlags = VARIABLE_BINDING_FLAGS){
+            return type.GetMembers(variableBindingFlags)
+                .Where(it => it.MemberType == MemberTypes.Property || it.MemberType == MemberTypes.Field)
+                .Where(it => settableOnly ? it.IsSettable() : true);
+        }
+
+        public static void SetVariable(this MemberInfo member, object target, object value)
+        {
+            switch (member)
+            {
+                case FieldInfo field:
+                    field.SetValue(target, value);
+                    return;
+                case PropertyInfo property:
+                    if(property.SetMethod == null){
+                        throw new ArgumentException($"The value of the {nameof(PropertyInfo)} {property.Name} cannot be set because it is read-only.");
+                    }
+                    property.SetValue(target, value);
+                    return;
+                default:
+                    throw new ArgumentException($"Cannot set the value of {member}.\nPlease supply a 'variable', i.e. a {nameof(PropertyInfo)} or {nameof(FieldInfo)}.\nName: {member.Name}\nType: {member.MemberType}");
+            }
+        }
+
+        public static T Smush<T>(IEnumerable<T> stuff) where T : new()
+        {
+            var newT = new T();
+
+            var tVariables = typeof(T).GetVariables(true);
+
+            foreach (var v in tVariables)
+            {
+                var newVal = stuff.FirstNonEmptyVariable(v);
+                if(newVal == null){
+                    System.Console.WriteLine($"Found no non-empty values for the variable {v.Name}");
+                }
+                v.SetVariable(newT, stuff.FirstNonEmptyVariable(v));
+            }
+
+            return newT;
+        }
+
+        public static T Smush<T>(params T[] stuff) where T : new()
+        {
+            return Smush((IEnumerable<T>)stuff);
         }
     }
 }

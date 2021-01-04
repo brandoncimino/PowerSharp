@@ -22,7 +22,7 @@ namespace PowerSharp
         [Parameter(Position = -1, ValueFromPipelineByPropertyName = true, ParameterSetName = "builder")]
         public string BaseUrl
         {
-            get => Find.NonBlank(
+            get => Find.FirstNonBlank(
                     _baseUrl,
                     RequestSpec != null ? RequestSpec.BaseUrl : null,
                     Api != null ? Api.BaseUrl : null
@@ -36,7 +36,7 @@ namespace PowerSharp
         [Parameter(ValueFromPipelineByPropertyName = true)]
         public string ApiVersion
         {
-            get => Find.NonBlank(
+            get => Find.FirstNonBlank(
                 _apiVersion,
                 RequestSpec != null ? RequestSpec.ApiVersion : null,
                 Api != null ? Api.ApiVersion : null
@@ -49,7 +49,7 @@ namespace PowerSharp
         [Parameter(ValueFromPipelineByPropertyName = true)]
         public string BasePath
         {
-            get => Find.NonBlank(
+            get => Find.FirstNonBlank(
                 _basePath,
                 RequestSpec != null ? RequestSpec.BasePath : null,
                 Api != null ? Api.BasePath : null
@@ -156,6 +156,55 @@ namespace PowerSharp
                 Body,
                 Headers
             );
+        }
+    }
+
+    [Cmdlet(VerbsLifecycle.Invoke, "ShortRest")]
+    public class InvokeShortRestCommand : PSCmdlet {
+        [Parameter(ValueFromPipeline = true)]
+        RestApi Api;
+
+        [Parameter(ValueFromPipelineByPropertyName=true)]
+        string BaseUrl;
+
+        [Parameter(ValueFromPipelineByPropertyName=true)]
+        string BasePath;
+
+        [Parameter(ValueFromPipelineByPropertyName=true)]
+        string ApiVersion;
+
+        [Parameter(ValueFromPipelineByPropertyName=true)]
+        string[] Endpoint;
+
+        [Parameter(ValueFromPipelineByPropertyName=true)]
+        WebRequestMethod Method;
+
+        [Parameter(ValueFromPipelineByPropertyName=true)]
+        IDictionary Headers;
+
+        [Parameter(ValueFromPipelineByPropertyName=true)]
+        IDictionary QueryParams;
+
+        [Parameter(ValueFromPipelineByPropertyName=true)]
+        object Body;
+
+        private RestApi BuildApi(){
+            return new RestApi(){
+                BaseUrl = this.BaseUrl,
+                BasePath = this.BasePath,
+                ApiVersion = this.ApiVersion,
+                Endpoint = this.Endpoint,
+                Method = this.Method,
+                Headers = this.Headers,
+                QueryParams = this.QueryParams,
+                Body = this.Body,
+                ParentApi = this.Api
+            };
+        }
+
+        protected override void ProcessRecord()
+        {
+            throw new NotImplementedException();
         }
     }
 }

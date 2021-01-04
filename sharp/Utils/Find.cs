@@ -48,7 +48,7 @@ namespace PowerSharp
                 case PropertyInfo property:
                     return FirstNonEmptyProperty(stuff,property);
                 default:
-                    throw new ArgumentException($"Please supply a 'variable', i.e. a {nameof(PropertyInfo)} or {nameof(FieldInfo)}");
+                    throw new ArgumentException($"Cannot get the value of {variableMember}.\nPlease supply a 'variable', i.e. a {nameof(PropertyInfo)} or {nameof(FieldInfo)}.\nName: {variableMember.Name}\nType: {variableMember.MemberType}");
             }
         }
     }

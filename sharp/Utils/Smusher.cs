@@ -14,9 +14,9 @@ namespace PowerSharp {
 
             foreach (var v in tVariables)
             {
-                System.Console.WriteLine($"{v} = {v.Name}; {v}");
+                System.Console.WriteLine($"\n\n========\n{v}\n========\n");
                 System.Console.WriteLine($"{nameof(combineCollections)} = {combineCollections}");
-                System.Console.WriteLine($"IEnumerable = {v.ReflectedType.GetInterface(nameof(IEnumerable))}");
+                System.Console.WriteLine($"{nameof(MemberUtils.IsEnumerable)} = {v.IsEnumerable()} ({v.IsEnumerable(true)}, {v.IsEnumerable(false)})");
                 if (combineCollections && v.IsEnumerable())
                 {
                     var newVal = MemberUtils.SmushVariable(v,stuff);
@@ -46,7 +46,8 @@ namespace PowerSharp {
             return newT;
         }
 
-        public static T Smush<T>(params T[] stuff) where T:new(){
+        public static T SmushT<T>(params T[] stuff) where T:new(){
+            System.Console.WriteLine($"params version of smush, where {nameof(T)} = {typeof(T).Name}");
             return Smush(stuff, true);
         }
     }

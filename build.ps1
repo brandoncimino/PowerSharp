@@ -1,7 +1,16 @@
-# This is the "build" script for the entire module, which combines both C# and PowerShell "modules"
-Write-Host "Building PowerSharp..."
+#This is the "build" script for the entire module, which combines both C# and PowerShell "modules"
+#Passing an alternate value as the -BuildFolder is primarily for whe you need to create temporary PowerShell sessions
+param (
+    [Parameter(Mandatory)]
+    $BuildFolder = 'build'
+)
 
-$old_build_dir = Get-Item "$PSScriptRoot/build" -ErrorAction SilentlyContinue
+#region cleaning the old build
+$build_path = "$PSScriptRoot/$BuildFolder"
+
+Write-Host -ForegroundColor Yellow "Building PowerSharp into $build_path..."
+
+$old_build_dir = Get-Item $build_path -ErrorAction SilentlyContinue
 if ($old_build_dir) {
     try {
         Remove-Item $old_build_dir -Recurse -Force -ErrorAction Stop
@@ -14,16 +23,18 @@ See https://docs.microsoft.com/en-us/powershell/scripting/dev-cross-plat/create-
         throw $_
     }
 }
+#endregion
 
 #region Variables
 $module = "PowerSharp"
-$build_dir = New-Item -ItemType Directory "$PSScriptRoot/build/$module"
+$build_dir = New-Item -ItemType Directory "$build_path/$module"
 $power_dir = Get-Item "$PSScriptRoot/power"
 $sharp_dir = Get-Item "$PSScriptRoot/sharp"
 $power_out = New-Item -ItemType Directory "$build_dir/power"
 $sharp_out = "$build_dir/bin"
 
 [ordered]@{
+    BuildFolder = $BuildFolder
     build_dir = $build_dir
     power_dir = $power_dir
     sharp_dir = $sharp_dir

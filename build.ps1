@@ -1,7 +1,7 @@
 #This is the "build" script for the entire module, which combines both C# and PowerShell "modules"
 #Passing an alternate value as the -BuildFolder is primarily for whe you need to create temporary PowerShell sessions
 param (
-    [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     $BuildFolder = 'build'
 )
 

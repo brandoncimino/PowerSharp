@@ -4,8 +4,10 @@ using System.Reflection;
 using System.Linq;
 using System.Collections;
 
-namespace PowerSharp {
-    public static class Smusher {
+namespace PowerSharp
+{
+    public static class Smusher
+    {
         public static T Smush<T>(IEnumerable<T> stuff, bool combineCollections) where T : new()
         {
             var newT = new T();
@@ -17,15 +19,16 @@ namespace PowerSharp {
                 System.Console.WriteLine($"\n\n========\n{v}\n========\n");
                 System.Console.WriteLine($"{nameof(combineCollections)} = {combineCollections}");
                 System.Console.WriteLine($"{nameof(MemberUtils.IsEnumerable)} = {v.IsEnumerable()} ({v.IsEnumerable(true)}, {v.IsEnumerable(false)})");
-                if (combineCollections && v.IsEnumerable())
+                System.Console.WriteLine($"{nameof(Smusher.IsSmushableCollection)} = {v.IsSmushableCollection()}");
+                if (combineCollections && v.IsSmushableCollection())
                 {
-                    var newVal = MemberUtils.SmushVariable(v,stuff);
+                    var newVal = MemberUtils.SmushVariableCollection(v, stuff);
 
                     System.Console.WriteLine($"{nameof(newVal)} = {newVal}");
 
                     if (newVal != null)
                     {
-                        v.SetVariable(newT, newVal);
+                        v.SetVariableValue(newT, newVal);
                     }
                     else
                     {
@@ -39,16 +42,31 @@ namespace PowerSharp {
                     {
                         System.Console.WriteLine($"Found no non-empty values for the variable {v.Name}");
                     }
-                    v.SetVariable(newT, stuff.FirstNonEmptyVariable(v));
+                    v.SetVariableValue(newT, stuff.FirstNonEmptyVariable(v));
                 }
             }
 
             return newT;
         }
 
-        public static T SmushT<T>(params T[] stuff) where T:new(){
-            System.Console.WriteLine($"params version of smush, where {nameof(T)} = {typeof(T).Name}");
+        public static T Smush<T>(params T[] stuff) where T : new()
+        {
+            return SmushCombined(stuff);
+        }
+
+        public static T SmushCombined<T>(params T[] stuff) where T : new()
+        {
             return Smush(stuff, true);
+        }
+
+        public static T SmushUncombined<T>(params T[] stuff) where T : new()
+        {
+            return Smush(stuff, false);
+        }
+
+        public static bool IsSmushableCollection(this MemberInfo member)
+        {
+            return member.IsList() || member.IsArray();
         }
     }
 }

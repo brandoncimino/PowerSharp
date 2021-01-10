@@ -17,6 +17,7 @@ namespace PowerSharp
             BindingFlags.NonPublic
         );
 
+        #region Descriptive Properties
         public static bool IsEnumerable(this MemberInfo memberInfo, bool includeStrings = false)
         {
             Type varType;
@@ -38,13 +39,6 @@ namespace PowerSharp
             }
 
             return varType.GetInterface(nameof(IEnumerable)) != null;
-        }
-
-        public static IEnumerable<MemberInfo> GetVariables(this Type type, bool settableOnly = false, BindingFlags variableBindingFlags = VARIABLE_BINDING_FLAGS)
-        {
-            return type.GetMembers(variableBindingFlags)
-                .Where(it => it.MemberType == MemberTypes.Property || it.MemberType == MemberTypes.Field)
-                .Where(it => settableOnly ? it.IsSettable() : true);
         }
 
         public static bool IsEmpty(this object value)
@@ -83,9 +77,42 @@ namespace PowerSharp
             }
         }
 
-        public static void SetVariable(this MemberInfo member, object target, object value)
+        public static bool IsArray(this MemberInfo member)
         {
-            switch (member)
+            return member.GetVariableType().IsArray;
+        }
+
+        public static bool IsList(this MemberInfo member)
+        {
+            return (
+                member.GetVariableType().IsGenericType &&
+                member.GetVariableType().GetGenericTypeDefinition().IsAssignableTo(typeof(List<>))
+            );
+        }
+        #endregion
+
+        #region "Variable" member type
+        public static object GetVariableValue(this MemberInfo variableMember, object target)
+        {
+            switch (variableMember)
+            {
+                case PropertyInfo property:
+                    if (property.SetMethod == null)
+                    {
+                        throw new ArgumentException($"The value of the {nameof(PropertyInfo)} {property.Name} cannot be retrieved because it does not have a {nameof(property.GetMethod)}.");
+                    }
+
+                    return property.GetValue(target);
+                case FieldInfo field:
+                    return field.GetValue(target);
+                default:
+                    throw new NonVariableException(variableMember);
+            }
+        }
+
+        public static void SetVariableValue(this MemberInfo variableMember, object target, object value)
+        {
+            switch (variableMember)
             {
                 case FieldInfo field:
                     field.SetValue(target, value);
@@ -98,122 +125,92 @@ namespace PowerSharp
                     property.SetValue(target, value);
                     return;
                 default:
-                    throw new ArgumentException($"Cannot set the value of {member}.\nPlease supply a 'variable', i.e. a {nameof(PropertyInfo)} or {nameof(FieldInfo)}.\nName: {member.Name}\nType: {member.MemberType}");
+                    throw new ArgumentException($"Cannot set the value of {variableMember}.\nPlease supply a 'variable', i.e. a {nameof(PropertyInfo)} or {nameof(FieldInfo)}.\nName: {variableMember.Name}\nType: {variableMember.MemberType}");
             }
         }
 
-        #region Generics
-        public static MethodInfo MakeGenericMethod(Type type, string methodName, params Type[] genericTypes)
+        public static Type GetVariableType(this MemberInfo variableMember)
         {
-            var bindingFlags = (
-                BindingFlags.Public |
-                BindingFlags.NonPublic |
-                BindingFlags.Instance |
-                BindingFlags.Static |
-                BindingFlags.InvokeMethod
-            );
-
-            var method = type.GetMethod(methodName, bindingFlags);
-            var genericMethod = method.MakeGenericMethod(genericTypes);
-            return genericMethod;
-        }
-
-        public static object InvokeGenericMethod(MethodInfo genericMethod, object invoker, IEnumerable<Type> genericTypes, IEnumerable<object> parameters)
-        {
-            genericMethod = genericMethod.MakeGenericMethod(genericTypes.ToArray());
-            return genericMethod.Invoke(invoker, parameters.ToArray());
-        }
-
-        public static object InvokeGenericMethod(MethodInfo genericMethod, object invoker, Type genericType, params object[] parameters)
-        {
-            return InvokeGenericMethod(genericMethod, invoker, new Type[] { genericType }, parameters);
-        }
-
-        public static object InvokeGenericMethod(MethodInfo genericMethod, object invoker, Type genericType1, Type genericType2, params object[] parameters)
-        {
-            return InvokeGenericMethod(genericMethod, invoker, new Type[] { genericType1, genericType2 }, parameters);
-        }
-
-        private static T CastGeneric<T>(object toCast)
-        {
-            return (T)toCast;
-        }
-
-        public static object CastAs(object toCast, Type type)
-        {
-            var castGenericMethod = typeof(MemberUtils).GetMethod(nameof(CastGeneric), BindingFlags.Static | BindingFlags.NonPublic);
-            System.Console.WriteLine($"castGenericMethod:    {castGenericMethod}");
-            System.Console.WriteLine($"name = {castGenericMethod.Name}");
-            System.Console.WriteLine($"generic = {castGenericMethod.IsGenericMethod}");
-            System.Console.WriteLine($"static = {castGenericMethod.IsStatic}");
-            var madeMethod = castGenericMethod.MakeGenericMethod(type);
-            System.Console.WriteLine($"madeMethod: {madeMethod}");
-            return madeMethod.Invoke(null, new object[] { toCast });
-        }
-        #endregion
-
-        public static object SmushVariable<T>(MemberInfo variableMember, IEnumerable<T> stuff)
-        {
-            System.Console.WriteLine($"Smushing {variableMember.Name}");
-            if (!variableMember.IsEnumerable())
-            {
-                throw new ArgumentException($"The {nameof(variableMember)} {variableMember.Name} must implement the {nameof(IEnumerable)} interface.");
-            }
-
             switch (variableMember)
             {
                 case PropertyInfo property:
-                    return Convert.ChangeType(stuff.SelectMany(it => (IEnumerable<object>)property.GetValue(it)), property.PropertyType);
+                    return property.PropertyType;
                 case FieldInfo field:
-                    return Convert.ChangeType(stuff.SelectMany(it => (IEnumerable<object>)field.GetValue(it)), field.FieldType);
+                    return field.FieldType;
                 default:
                     throw new NonVariableException(variableMember);
             }
         }
 
-        public static object SmVar(MemberInfo variableMember, IEnumerable stuff)
-        {
-            if (!variableMember.IsEnumerable())
-            {
-                throw new ArgumentException($"The {nameof(variableMember)} {variableMember.Name} must implement the {nameof(IEnumerable)} interface.");
-            }
+        /// <summary>
+        /// Returns <c>true</c> if <paramref name="variableMember"/>'s <see cref="GetVariableType(MemberInfo)"/> <see cref="Type.IsArray"/>.
+        /// </summary>
+        /// <param name="variableMember"></param>
+        /// <returns></returns>
+        public static Type GetVariableArrayType(this MemberInfo variableMember){
+            var vType = variableMember.GetVariableType();
+            return vType.GetElementType();
+        }
 
-            switch (variableMember)
+        public static Type GetVariableEnumerableType(this MemberInfo variableMember){
+            var vType = variableMember.GetVariableType();
+
+            if(vType.IsEnumerable()){
+                return vType.GetGenericArguments().Single();
+            }
+            else
             {
-                case PropertyInfo propertyInfo:
-                    return ((IEnumerable<object>)stuff).SelectMany(it => (IEnumerable<object>)propertyInfo.GetValue(it));
-                case FieldInfo fieldInfo:
-                    return ((IEnumerable<object>)stuff).SelectMany(it => (IEnumerable<object>)fieldInfo.GetValue(it));
-                default:
-                    throw new NonVariableException(variableMember);
+                throw new RuntimeException($"Cannot get the generic Enumerable type from the {nameof(variableMember)} {variableMember.Name} of type {vType.Name}");
             }
         }
 
-        public static object ConcatField(FieldInfo field, object ob1, object ob2)
+        /// <summary>
+        /// Returns all of the <see cref="PropertyInfo"/> and <see cref="FieldInfo"/> members from the given <paramref name="type"/>.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="settableOnly">If <c>true</c>, then <see cref="PropertyInfo"/>s without <see cref="PropertyInfo.SetMethod"/>s will be excluded.</param>
+        /// <param name="variableBindingFlags"></param>
+        /// <returns></returns>
+        public static IEnumerable<MemberInfo> GetVariables(this Type type, bool settableOnly = false, BindingFlags variableBindingFlags = VARIABLE_BINDING_FLAGS)
         {
-            // TODO: NOT FINISHED YET, and shouldn't be just for fields, should also take properties, but one step at a time pls
-            var v1 = field.GetValue(ob1);
-            var v2 = field.GetValue(ob2);
-
-            var t1 = v1.GetType();
-            var t2 = v2.GetType();
-
-            System.Console.WriteLine($"Types - v1: {t1}, v2: {t2}");
-
-            var e1 = (IEnumerable<dynamic>)v1;
-            var e2 = (IEnumerable<dynamic>)v2;
-
-            object concat = null;
-            // var concat = e1.Concat(e2);
-            if (v1 is object[] ie1)
-            {
-                if (v2 is object[] ie2)
-                {
-                    concat = ie1.Concat(ie2);
-                }
-            }
-            System.Console.WriteLine($"Concat type: {concat.GetType().Name}");
-            return concat;
+            return type.GetMembers(variableBindingFlags)
+                .Where(it => it.MemberType == MemberTypes.Property || it.MemberType == MemberTypes.Field)
+                .Where(it => settableOnly ? it.IsSettable() : true);
         }
+
+        /// <summary>
+        /// Calls <see cref="GetVariableValue(MemberInfo, object)"/> against each item in <paramref name="stuff"/> and, <b>if the <see cref="GetVariableType(MemberInfo)"/> is <see cref="Array"/> or <see cref="List{T}"/></b>, <see cref="Enumerable.Concat{TSource}(IEnumerable{TSource}, IEnumerable{TSource})"/>s the results.
+        /// </summary>
+        /// <param name="variableMember"></param>
+        /// <param name="stuff"></param>
+        /// <returns></returns>
+        public static object SmushVariableCollection<T>(this MemberInfo variableMember, IEnumerable<T> stuff)
+        {
+            System.Console.WriteLine($"Executing {nameof(SmushVariableCollection)}");
+
+            var vType = variableMember.GetVariableType();
+
+            if (variableMember.IsArray())
+            {
+                System.Console.WriteLine($"{nameof(variableMember)} {variableMember.Name} is an array");
+                var smushed = stuff
+                    .SelectMany(it => (object[])variableMember.GetVariableValue(it))
+                    .ToArray(variableMember.GetVariableArrayType());
+                System.Console.WriteLine($"{nameof(smushed)} type = [{smushed.GetType()}]");
+                return smushed;
+            }
+            else if (variableMember.IsList())
+            {
+                System.Console.WriteLine($"{nameof(variableMember)} {variableMember.Name} is a list");
+                return stuff
+                    .SelectMany(it => (IEnumerable<object>)variableMember.GetVariableValue(it))
+                    .ToList(variableMember.GetVariableEnumerableType());
+            }
+            else
+            {
+                throw new RuntimeException($"I only know how to smush together arrays and lists!");
+            }
+        }
+        #endregion
     }
 }

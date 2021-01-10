@@ -100,30 +100,6 @@ namespace PowerSharp
                 headers
             );
         }
-
-        public static Collection<PSObject> InvokeRestCommand(
-            this CommandInvocationIntrinsics commandInvocation,
-            RestApi api
-        ){
-            //TODO: store error responses in RestApi
-            var response = commandInvocation.InvokeRestCommand(
-                api.Uri,
-                api.Method,
-                api.Body,
-                api.Headers
-            );
-
-            api.LastResponse = response.Single();
-            return response;
-        }
-
-        public static Collection<PSObject> InvokeRestCommand(
-            this PSCmdlet caller,
-            RestApi api
-        ){
-            return caller.InvokeCommand.InvokeRestCommand(api);
-        }
-
         #endregion
     }
 }

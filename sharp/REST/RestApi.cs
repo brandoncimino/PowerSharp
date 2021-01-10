@@ -82,9 +82,31 @@ namespace PowerSharp
         );
 
         #region Instance Methods
-        public PSObject Invoke()
+        public PSObject Invoke(CommandInvocationIntrinsics commandInvocation)
         {
-            throw new NotImplementedException();
+            //TODO: store error responses in RestApi
+            try
+            {
+                var response = commandInvocation.InvokeRestCommand(
+                    Uri,
+                    Method,
+                    Body,
+                    Headers
+                ).Single();
+
+                LastResponse = response;
+
+                return response;
+            }
+            catch (Exception e)
+            {
+                throw new NotImplementedException($"I haven't implemented storing exceptions like '{e.Message}', because I need to convert them to [{nameof(ErrorRecord)}]s");
+            }
+        }
+
+        public PSObject Invoke(PSCmdlet caller)
+        {
+            return Invoke(caller.InvokeCommand);
         }
 
         public object Clone()
@@ -98,8 +120,9 @@ namespace PowerSharp
             newApi.Headers = new Hashtable(this.Headers);
             newApi.QueryParams = new Hashtable(this.QueryParams);
             newApi.Endpoint = new List<string>(this.Endpoint).ToArray();
-            
-            if(asChild){
+
+            if (asChild)
+            {
                 newApi.ParentApi = this;
             }
 
@@ -113,7 +136,8 @@ namespace PowerSharp
         #endregion
 
         #region Utilities
-        public RestApi Combine(params RestApi[] restApis){
+        public RestApi Combine(params RestApi[] restApis)
+        {
             var newApi = new RestApi();
 
             newApi.BaseUrl = restApis.Select(api => api.BaseUrl).FirstOrDefault(url => !string.IsNullOrWhiteSpace(url));

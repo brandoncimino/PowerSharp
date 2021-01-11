@@ -16,10 +16,13 @@ namespace PowerSharp
 
         public string ApiVersion;
 
+        //TODO: Default this to null
         public string[] Endpoint = new string[] { };
 
+        //TODO: Default this to null
         public IDictionary Headers = new Dictionary<object, object>();
 
+        //TODO: Default this to null
         public IDictionary QueryParams = new Dictionary<object, object>();
 
         private PSObject _lastResponse_personal;
@@ -67,24 +70,45 @@ namespace PowerSharp
 
         public object Body;
 
-        public WebRequestMethod Method = WebRequestMethod.Get;
+        public WebRequestMethod Method = WebRequestMethod.Default;
 
         public RestApi ParentApi;
 
-        public string QueryString => RestUtils.FormatQueryParams(QueryParams);
+        public string QueryString
+        {
+            get => RestUtils.FormatQueryParams(QueryParams);
+            set => QueryParams = RestUtils.ParseQueryParams(value);
+        }
 
-        public Uri Uri => RestUtils.BuildUrl(
-            BaseUrl,
-            BasePath,
-            ApiVersion,
-            Endpoint,
-            QueryParams
-        );
+        public Uri Uri
+        {
+            get => RestUtils.BuildUrl(
+                BaseUrl,
+                BasePath,
+                ApiVersion,
+                Endpoint,
+                QueryParams
+            );
+
+            set => SetValuesFromUri(value);
+        }
+
+        #region Constructors
+        public RestApi() { }
+
+        public RestApi(Uri uri)
+        {
+            SetValuesFromUri(uri);
+        }
+
+        public RestApi(string uriString) : this(new Uri(uriString)) { }
+        #endregion
 
         #region Instance Methods
         public PSObject Invoke(CommandInvocationIntrinsics commandInvocation)
         {
-            //TODO: store error responses in RestApi
+            //TODO: Store error responses in RestApi
+            //TODO: Add a version of this that doesn't require a CommandInvocationIntrinsics
             try
             {
                 var response = commandInvocation.InvokeRestCommand(
@@ -133,9 +157,7 @@ namespace PowerSharp
         {
             return this.Uri.ToString();
         }
-        #endregion
-
-        #region Utilities
+        
         public RestApi Combine(params RestApi[] restApis)
         {
             var newApi = new RestApi();
@@ -150,6 +172,13 @@ namespace PowerSharp
             newApi.Body = restApis.Select(api => api.Body).FirstOrDefault(body => body.IsNotEmpty());
 
             return newApi;
+        }
+
+        public void SetValuesFromUri(Uri uri)
+        {
+            this.BaseUrl = uri.Host;
+            this.BasePath = uri.LocalPath;
+            this.QueryParams = RestUtils.ParseQueryParams(uri.Query);
         }
         #endregion
     }

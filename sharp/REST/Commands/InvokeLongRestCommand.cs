@@ -204,15 +204,7 @@ namespace PowerSharp
 
         protected override void ProcessRecord()
         {
-            var reqApi = BuildApi();
-
-            WriteObject(RestUtils.InvokeRestCommand(
-                this,
-                reqApi.Uri,
-                reqApi.Method,
-                reqApi.Body,
-                reqApi.Headers
-            ));
+            WriteObject(BuildApi().Invoke(this));
         }
     }
 }

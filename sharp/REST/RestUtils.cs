@@ -6,6 +6,7 @@ using System.IO;
 using System.Management.Automation;
 using Microsoft.PowerShell.Commands;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace PowerSharp
 {
@@ -19,11 +20,47 @@ namespace PowerSharp
             {
                 if (queryParams[key] != null && !string.IsNullOrWhiteSpace(queryParams[key].ToString()))
                 {
-                    pairs.Add($"{key}={queryParams[key]}");
+                    var key_e = Uri.EscapeDataString(key.ToString());
+                    var val_e = Uri.EscapeDataString(queryParams[key].ToString());
+                    pairs.Add($"{key_e}={val_e}");
+                    // pairs.Add($"{key}={queryParams[key]}");
                 }
             }
 
             return string.Join("&", pairs);
+        }
+
+        public static Dictionary<object, object> ParseQueryParams(string queryString)
+        {
+            var keyName = "key";
+            var valName = "val";
+            var parName = "par";
+            var keyPat = $"(?<{keyName}>[^=]+)";
+            var valPat = $"(?<{valName}>[^&]+)";
+            var qParPat = $"{keyName}={valName}";
+            var qStrPat = $"\\??(?<{parName}>{qParPat})*";
+
+            if (!Regex.IsMatch(queryString, qStrPat))
+            {
+                throw new UriFormatException($"Couldn't parse query parameters from the {nameof(queryString)}:\n\t{queryString}");
+            }
+
+            var queryMatch = Regex.Match(queryString, qStrPat);
+            var keyCaptures = queryMatch.Groups[keyName].Captures;
+            var valCaptures = queryMatch.Groups[valName].Captures;
+
+            if (keyCaptures.Count != valCaptures.Count)
+            {
+                throw new UriFormatException($"Parsed the {nameof(queryString)}, but found {keyCaptures.Count} keys and {valCaptures.Count} values!");
+            }
+
+            var queryDic = new Dictionary<object, object>();
+            for (int i = 0; i < keyCaptures.Count; i++)
+            {
+                queryDic.Add(keyCaptures[i], valCaptures[i]);
+            }
+
+            return queryDic;
         }
 
         public static string JoinUrl(IEnumerable<string> parts)
@@ -42,10 +79,10 @@ namespace PowerSharp
             return string.Join("/", trimmed);
         }
 
-        public static Uri BuildUrl(string baseUrl, string basePath, string apiVersion, IEnumerable<string> endpoint, IDictionary queryParams)
+        public static Uri BuildUrl(string baseUrl, string basePath, string apiVersion, IEnumerable<object> endpoint, IDictionary queryParams)
         {
             var urlParts = new List<string> { baseUrl, basePath, apiVersion };
-            urlParts.AddRange(endpoint);
+            urlParts.AddRange(endpoint.Select(it => it.ToString()));
 
             var urlString = JoinUrl(urlParts);
             var uriBuilder = new UriBuilder(urlString);

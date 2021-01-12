@@ -205,7 +205,8 @@ namespace PowerSharp
             };
         }
 
-        private RestApi SmushApi(){
+        private RestApi SmushApi()
+        {
             return Smusher.Smush(
                 BuildApi(),
                 Api

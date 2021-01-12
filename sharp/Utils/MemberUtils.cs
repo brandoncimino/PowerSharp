@@ -219,17 +219,14 @@ namespace PowerSharp
 
         private static object SmushVariableArray<T>(MemberInfo variableMember, IEnumerable<T> stuff)
         {
-            System.Console.WriteLine($"{nameof(variableMember)} {variableMember.Name} is an array");
             var smushed = stuff
                 .SelectMany(it => (object[])variableMember.GetVariableValue(it))
                 .ToArray(variableMember.GetVariableArrayType());
-            System.Console.WriteLine($"{nameof(smushed)} type = [{smushed.GetType()}]");
             return smushed;
         }
 
         private static object SmushVariableList<T>(MemberInfo variableMember, IEnumerable<T> stuff)
         {
-            System.Console.WriteLine($"{nameof(variableMember)} {variableMember.Name} is a list");
             return stuff
                 .SelectMany(it => (IEnumerable<object>)variableMember.GetVariableValue(it))
                 .ToList(variableMember.GetVariableEnumerableType());
@@ -237,7 +234,6 @@ namespace PowerSharp
 
         private static object SmushVariableDictionary<T>(MemberInfo variableMember, IEnumerable<T> stuff)
         {
-            System.Console.WriteLine($"{nameof(variableMember)} {variableMember.Name} is an {nameof(IDictionary)}");
             return GeneralUtils.JoinMaps(
                 stuff.Select(it => (IDictionary)variableMember.GetVariableValue(it)).ToArray()
             );

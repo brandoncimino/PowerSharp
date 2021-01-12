@@ -78,9 +78,7 @@ namespace PowerSharp
 
         private static T CastGeneric<T>(object toCast)
         {
-            T casted = (T)toCast;
-            System.Console.WriteLine($"Casted: [{typeof(T).Name}] {casted}");
-            return casted;
+            return (T)toCast;
         }
 
         public static object CastAs(object toCast, Type type)

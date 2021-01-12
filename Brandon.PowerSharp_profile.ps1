@@ -8,14 +8,14 @@ using namespace PowerSharp
 using namespace System.Collections
 #endregion
 
-Write-Host -ForegroundColor Green "Importing BrandonProfile.ps1"
+Write-Host -ForegroundColor Green "Importing Brandon.PowerSharp_profile.ps1"
 
 #region Variables
 $Global:ProfileHome = [Path]::GetDirectoryName($Profile)
 #endregion
 
 #region Sources
-
+$env:PSModulePath += ";$PSScriptRoot/build"
 #endregion
 
 #region Aliases

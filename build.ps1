@@ -55,5 +55,3 @@ Copy-Item -Path $power_dir -Destination $power_out -Recurse
 #region Build the C# .dll
 dotnet build $sharp_dir -o $sharp_out
 #endregion
-
-Import-Module "$build_dir/$module.psd1"

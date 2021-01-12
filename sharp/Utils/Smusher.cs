@@ -77,7 +77,7 @@ namespace PowerSharp
 
         public static bool IsSmushableCollection(this MemberInfo member)
         {
-            return member.IsList() || member.IsArray();
+            return member.IsList() || member.IsArray() || member.IsDictionary();
         }
     }
 }

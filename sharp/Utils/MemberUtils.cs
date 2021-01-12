@@ -89,6 +89,14 @@ namespace PowerSharp
                 member.GetVariableType().GetGenericTypeDefinition().IsAssignableTo(typeof(List<>))
             );
         }
+
+        public static bool IsDictionary(this MemberInfo member)
+        {
+            return (
+                member.GetVariableType().IsAssignableTo(typeof(IDictionary)) ||
+                member.GetVariableType().GetInterface(nameof(IDictionary)) != null
+            );
+        }
         #endregion
 
         #region "Variable" member type
@@ -147,15 +155,18 @@ namespace PowerSharp
         /// </summary>
         /// <param name="variableMember"></param>
         /// <returns></returns>
-        public static Type GetVariableArrayType(this MemberInfo variableMember){
+        public static Type GetVariableArrayType(this MemberInfo variableMember)
+        {
             var vType = variableMember.GetVariableType();
             return vType.GetElementType();
         }
 
-        public static Type GetVariableEnumerableType(this MemberInfo variableMember){
+        public static Type GetVariableEnumerableType(this MemberInfo variableMember)
+        {
             var vType = variableMember.GetVariableType();
 
-            if(vType.IsEnumerable()){
+            if (vType.IsEnumerable())
+            {
                 return vType.GetGenericArguments().Single();
             }
             else
@@ -186,30 +197,50 @@ namespace PowerSharp
         /// <returns></returns>
         public static object SmushVariableCollection<T>(this MemberInfo variableMember, IEnumerable<T> stuff)
         {
-            System.Console.WriteLine($"Executing {nameof(SmushVariableCollection)}");
-
             var vType = variableMember.GetVariableType();
 
             if (variableMember.IsArray())
             {
-                System.Console.WriteLine($"{nameof(variableMember)} {variableMember.Name} is an array");
-                var smushed = stuff
-                    .SelectMany(it => (object[])variableMember.GetVariableValue(it))
-                    .ToArray(variableMember.GetVariableArrayType());
-                System.Console.WriteLine($"{nameof(smushed)} type = [{smushed.GetType()}]");
-                return smushed;
+                return SmushVariableArray(variableMember, stuff);
             }
             else if (variableMember.IsList())
             {
-                System.Console.WriteLine($"{nameof(variableMember)} {variableMember.Name} is a list");
-                return stuff
-                    .SelectMany(it => (IEnumerable<object>)variableMember.GetVariableValue(it))
-                    .ToList(variableMember.GetVariableEnumerableType());
+                return SmushVariableList(variableMember, stuff);
+            }
+            else if (variableMember.IsDictionary())
+            {
+                return SmushVariableDictionary(variableMember, stuff);
             }
             else
             {
-                throw new RuntimeException($"I only know how to smush together arrays and lists!");
+                throw new RuntimeException($"I only know how to smush together Arrays, Lists, and Dictionaries!");
             }
+        }
+
+        private static object SmushVariableArray<T>(MemberInfo variableMember, IEnumerable<T> stuff)
+        {
+            System.Console.WriteLine($"{nameof(variableMember)} {variableMember.Name} is an array");
+            var smushed = stuff
+                .SelectMany(it => (object[])variableMember.GetVariableValue(it))
+                .ToArray(variableMember.GetVariableArrayType());
+            System.Console.WriteLine($"{nameof(smushed)} type = [{smushed.GetType()}]");
+            return smushed;
+        }
+
+        private static object SmushVariableList<T>(MemberInfo variableMember, IEnumerable<T> stuff)
+        {
+            System.Console.WriteLine($"{nameof(variableMember)} {variableMember.Name} is a list");
+            return stuff
+                .SelectMany(it => (IEnumerable<object>)variableMember.GetVariableValue(it))
+                .ToList(variableMember.GetVariableEnumerableType());
+        }
+
+        private static object SmushVariableDictionary<T>(MemberInfo variableMember, IEnumerable<T> stuff)
+        {
+            System.Console.WriteLine($"{nameof(variableMember)} {variableMember.Name} is an {nameof(IDictionary)}");
+            return GeneralUtils.JoinMaps(
+                stuff.Select(it => (IDictionary)variableMember.GetVariableValue(it)).ToArray()
+            );
         }
         #endregion
     }

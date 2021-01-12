@@ -160,36 +160,39 @@ namespace PowerSharp
     }
 
     [Cmdlet(VerbsLifecycle.Invoke, "ShortRest")]
-    public class InvokeShortRestCommand : PSCmdlet {
+    public class InvokeShortRestCommand : PSCmdlet
+    {
         [Parameter(ValueFromPipeline = true)]
         RestApi Api;
 
-        [Parameter(ValueFromPipelineByPropertyName=true)]
+        [Parameter(ValueFromPipelineByPropertyName = true)]
         string BaseUrl;
 
-        [Parameter(ValueFromPipelineByPropertyName=true)]
+        [Parameter(ValueFromPipelineByPropertyName = true)]
         string BasePath;
 
-        [Parameter(ValueFromPipelineByPropertyName=true)]
+        [Parameter(ValueFromPipelineByPropertyName = true)]
         string ApiVersion;
 
-        [Parameter(ValueFromPipelineByPropertyName=true)]
+        [Parameter(ValueFromPipelineByPropertyName = true)]
         string[] Endpoint;
 
-        [Parameter(ValueFromPipelineByPropertyName=true)]
+        [Parameter(ValueFromPipelineByPropertyName = true)]
         WebRequestMethod Method;
 
-        [Parameter(ValueFromPipelineByPropertyName=true)]
+        [Parameter(ValueFromPipelineByPropertyName = true)]
         IDictionary Headers;
 
-        [Parameter(ValueFromPipelineByPropertyName=true)]
+        [Parameter(ValueFromPipelineByPropertyName = true)]
         IDictionary QueryParams;
 
-        [Parameter(ValueFromPipelineByPropertyName=true)]
+        [Parameter(ValueFromPipelineByPropertyName = true)]
         object Body;
 
-        private RestApi BuildApi(){
-            return new RestApi(){
+        private RestApi BuildApi()
+        {
+            return new RestApi()
+            {
                 BaseUrl = this.BaseUrl,
                 BasePath = this.BasePath,
                 ApiVersion = this.ApiVersion,
@@ -202,9 +205,16 @@ namespace PowerSharp
             };
         }
 
+        private RestApi SmushApi(){
+            return Smusher.Smush(
+                BuildApi(),
+                Api
+            );
+        }
+
         protected override void ProcessRecord()
         {
-            WriteObject(BuildApi().Invoke(this));
+            WriteObject(SmushApi().Invoke(this));
         }
     }
 }

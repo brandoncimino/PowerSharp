@@ -157,7 +157,7 @@ namespace PowerSharp
         {
             return this.Uri.ToString();
         }
-        
+
         public RestApi Combine(params RestApi[] restApis)
         {
             var newApi = new RestApi();

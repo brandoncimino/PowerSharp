@@ -2,7 +2,8 @@
 #Passing an alternate value as the -BuildFolder is primarily for whe you need to create temporary PowerShell sessions
 param (
     [ValidateNotNullOrEmpty()]
-    $BuildFolder = 'build'
+    $BuildFolder = 'build',
+    [switch]$ImportBuild
 )
 
 #region cleaning the old build
@@ -55,3 +56,13 @@ Copy-Item -Path $power_dir -Destination $power_out -Recurse
 #region Build the C# .dll
 dotnet build $sharp_dir -o $sharp_out
 #endregion
+
+#region Optionally import the build into the current session
+if($ImportBuild){
+    Write-Host -ForegroundColor DarkGray "Explicitly importing the new build into the current session!"
+    Import-Module $build_dir
+}
+else {
+    Write-Host -ForegroundColor DarkGray "Skipping import of the new build."
+}
+#enregion

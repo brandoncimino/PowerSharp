@@ -17,7 +17,7 @@ Write-Host -ForegroundColor DarkGray "Launching $([System.IO.Path]::GetFileName(
 } | Out-String | Write-Host -ForegroundColor DarkGray
 
 # Build the module
-.\build.ps1 -BuildFolder $BuildFolder
+.\build.ps1 -BuildFolder $BuildFolder -ImportBuild
 
 # Run my profile
 . .\Brandon.PowerSharp_profile.ps1

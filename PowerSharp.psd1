@@ -72,6 +72,7 @@
         "./bin/PowerSharp.dll"
         "./power/PropertyUtils.psm1"
         "./power/Smusher.psm1"
+        "./power/FileUtils.psm1"
     )
 
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
@@ -79,13 +80,13 @@
     # Those should be placed into "CmdletsToExport" instead.
     FunctionsToExport = @(
         # PropertyUtils
-        'Add-PrimaryKey',
-        'Add-Alias',
-        'Get-Properties',
-        'Get-IsSettable',
+        'Add-PrimaryKey'
+        'Add-Alias'
+        'Get-Properties'
+        'Get-IsSettable'
 
         # Smusher
-        'Get-Smushed',
+        'Get-Smushed'
 
         # FileUtils
         'Edit-Content'
@@ -98,9 +99,9 @@
     #   Get-Command -module PowerSharp
     CmdletsToExport   = @(
         # sharp
-        'Format-QueryParams',
-        'Get-ScryfallCard',
-        'Invoke-LongRest',
+        'Format-QueryParams'
+        'Get-ScryfallCard'
+        'Invoke-LongRest'
         'Join-Url'
     )
 

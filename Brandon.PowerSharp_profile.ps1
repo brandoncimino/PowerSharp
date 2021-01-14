@@ -15,11 +15,11 @@ $Global:ProfileHome = [Path]::GetDirectoryName($Profile)
 #endregion
 
 #region Sources
-$env:PSModulePath += ";$PSScriptRoot/build"
+$env:PSModulePath += "$([Path]::PathSeparator)$PSScriptRoot/build"
 #endregion
 
 #region Aliases
-New-Alias -Name psharp -Value Import-PowerSharp
+
 #endregion
 
 #region Startup

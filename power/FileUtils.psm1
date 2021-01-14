@@ -9,10 +9,10 @@ function Edit-Content(
     [string]$Replacement
 ){
     PROCESS {
-        $items = Get-ChildItem $Path -Recurse
+        $items = Get-ChildItem $Path -File -Recurse
 
         foreach($it in $items){
-            [string]$content = Get-Content $it
+            $content = Get-Content $it
             $new_content = $content -replace $Original, $Replacement
             Set-Content -Path $it -Value $new_content
         }

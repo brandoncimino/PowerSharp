@@ -75,22 +75,34 @@
     )
 
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
+    # Brandon's Note: This DOES NOT include functions defined as "Cmdlets", which means _everything written in C#_.
+    # Those should be placed into "CmdletsToExport" instead.
     FunctionsToExport = @(
-        # power
+        # PropertyUtils
         'Add-PrimaryKey',
         'Add-Alias',
         'Get-Properties',
         'Get-IsSettable',
+
+        # Smusher
         'Get-Smushed',
 
-        # sharp
-        'Invoke-LongRest',
-        'Join-Url',
-        'Format-QueryParams'
+        # FileUtils
+        'Edit-Content'
     )
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
-    CmdletsToExport   = @()
+    # Brandon's Note: On Windows, "Cmdlets" can be included in FunctionsToExport (specifically, Cmdlets defined in C#; presumably this would also include functions that have the [CmdletBinding] attribute)
+    # but on Mac, they have to be in "CmdletsToExport".
+    # You can find out whether they are 'Functions' or 'Cmdlets' by running:
+    #   Get-Command -module PowerSharp
+    CmdletsToExport   = @(
+        # sharp
+        'Format-QueryParams',
+        'Get-ScryfallCard',
+        'Invoke-LongRest',
+        'Join-Url'
+    )
 
     # Variables to export from this module
     VariablesToExport = '*'

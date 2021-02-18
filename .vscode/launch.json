@@ -14,6 +14,13 @@
                 "temp",
                 "${file}"
             ]
+        },
+        {
+            "type": "PowerShell",
+            "request": "launch",
+            "name": "Run In Current Session",
+            "script": "${file}",
+            "createTemporaryIntegratedConsole": false
         }
     ]
 }

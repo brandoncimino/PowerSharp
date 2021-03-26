@@ -41,7 +41,7 @@ $sharp_out = "$build_dir/bin"
     sharp_dir = $sharp_dir
     power_out = $power_out
     sharp_out = $sharp_out
-} | Out-String | Write-Host -ForegroundColor darkgray
+} | Format-Table -Wrap | Out-String | Write-Host -ForegroundColor darkgray
 #endregion
 
 #region Move the manifest (.psd1) file
@@ -50,7 +50,9 @@ Copy-Item -Path $manifest -Destination $build_dir
 #endregion
 
 #region Move the PowerShell module files
-Copy-Item -Path $power_dir -Destination $power_out -Recurse
+# Note: $power_dir and $power_out cannot refer to the "same folder" - i.e., if we move "power" into "power", we get "power/power".
+# Instead, we move $power_dir/* (i.e. everything _inside_ of $power_dir) into $power_out.
+Copy-Item -Path $power_dir/* -Destination $power_out -Recurse
 #endregion
 
 #region Build the C# .dll
